@@ -8,6 +8,9 @@ import (
 func main() {
 	viperConfig := config.NewViper()
 	app := config.NewFiber(viperConfig)
+	db := config.NewDatabase(viperConfig)
+
+	fmt.Println(db)
 
 	err := app.Listen(":8000")
 	if err != nil {
