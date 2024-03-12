@@ -9,11 +9,16 @@ func main() {
 	viperConfig := config.NewViper()
 	app := config.NewFiber(viperConfig)
 	db := config.NewDatabase(viperConfig)
-
-	fmt.Println(db)
-
-	err := app.Listen(":8000")
+	validate := config.NewValidator(viperConfig)
+	config.Bootstrap(&config.BootstrapConfig{
+		App:      app,
+		DB:       db,
+		Config:   viperConfig,
+		Validate: validate,
+	})
+	webPort := viperConfig.GetInt("web.port")
+	err := app.Listen(fmt.Sprintf(":%d", webPort))
 	if err != nil {
-		fmt.Errorf("Fatal error config file: %w \n", err)
+		fmt.Errorf("Failed to start server: %w \n", err)
 	}
 }
