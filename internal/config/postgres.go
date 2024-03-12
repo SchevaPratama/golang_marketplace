@@ -30,5 +30,7 @@ func NewDatabase(viper *viper.Viper) *sqlx.DB {
 	db.SetMaxOpenConns(maxConnection)
 	db.SetConnMaxLifetime(time.Second * time.Duration(maxLifeTimeConnection))
 
+	fmt.Println("Database Connected")
+
 	return db
 }
