@@ -9,10 +9,10 @@
     "level": 6
   },
   "database": {
-    "username": "root",
+    "username": "postgres",
     "password": "",
     "host": "localhost",
-    "port": 3306,
+    "port": 5432,
     "name": "golang_marketplace",
     "pool": {
       "idle": 10,
