@@ -3,7 +3,7 @@ package entity
 type Product struct {
 	ID            string
 	Name          string
-	Price         string
+	Price         int64
 	ImageUrl      string
 	Stock         int16
 	Condition     string
@@ -13,5 +13,5 @@ type Product struct {
 }
 
 func (prod *Product) TableName() string {
-	return "products"
+	return "product"
 }

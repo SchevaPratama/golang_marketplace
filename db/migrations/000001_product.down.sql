@@ -1,3 +1,3 @@
 DROP TABLE product_tags;
-DROP TABLE product;
+DROP TABLE products;
 DROP EXTENSION "uuid-ossp";
