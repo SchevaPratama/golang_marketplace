@@ -23,18 +23,22 @@ type BootstrapConfig struct {
 
 func Bootstrap(config *BootstrapConfig) {
 	// setup repositories
+	userRepository := repository.NewUserRepository(config.DB)
 	productRepository := repository.NewProductRepository(config.DB)
 
 	// setup services
 	productService := service.NewProductService(productRepository, config.Validate, config.Log, config.DB)
+	userService := service.NewUserService(userRepository, config.Validate, config.Log)
 
 	// setup handler
 	productHandler := handler.NewProductHandler(productService, config.Log)
+	userHandler := handler.NewUserHandler(userService, config.Log)
 
 	// setup route
 	routeConfig := router.RouteConfig{
 		App:            config.App,
 		ProductHandler: productHandler,
+		UserHandler:    userHandler,
 	}
 
 	routeConfig.Setup()
