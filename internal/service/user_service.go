@@ -7,6 +7,7 @@ import (
 	jtoken "github.com/golang-jwt/jwt/v4"
 	"github.com/sagikazarmark/slog-shim"
 	"golang-marketplace/internal/entity"
+	helpers "golang-marketplace/internal/helper"
 	"golang-marketplace/internal/model"
 	"golang-marketplace/internal/repository"
 	"golang.org/x/crypto/bcrypt"
@@ -27,7 +28,7 @@ func NewUserService(r *repository.UserRepository, validate *validator.Validate, 
 func (s *UserService) Register(ctx context.Context, request *model.RegisterRequest) (*model.LoginRegisterResponse, error) {
 
 	// handle request
-	err := s.Validate.Struct(request)
+	err := helpers.ValidationError(s.Validate, request)
 	if err != nil {
 		return nil, &fiber.Error{
 			Code:    400,
@@ -45,7 +46,7 @@ func (s *UserService) Register(ctx context.Context, request *model.RegisterReque
 
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
 	if err != nil {
-		log.Fatal("Error hashedPassword")
+		log.Println("Error hashedPassword")
 	}
 
 	user = &entity.User{
@@ -56,7 +57,7 @@ func (s *UserService) Register(ctx context.Context, request *model.RegisterReque
 
 	err = s.Repository.Create(user)
 	if err != nil {
-		log.Fatal("Gagal menyimpan user", err)
+		log.Println("Gagal menyimpan user", err)
 	}
 
 	day := time.Hour * 24
@@ -144,5 +145,5 @@ func (s *UserService) getUsername(username string) (*entity.User, error) {
 			Message: "User NotFound",
 		}
 	}
-	return &entity.User{Username: username}, nil
+	return &user, nil
 }

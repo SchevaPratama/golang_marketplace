@@ -23,8 +23,7 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	request := new(model.LoginRequest)
 
 	if err := c.BodyParser(request); err != nil {
-		h.Log.Error("failed to process request")
-		return fiber.ErrBadRequest
+		return err
 	}
 
 	resp, err := h.Service.Login(c.UserContext(), request)
@@ -42,14 +41,12 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	request := new(model.RegisterRequest)
 
 	if err := c.BodyParser(request); err != nil {
-		h.Log.Error("failed to process request")
-		return fiber.ErrBadRequest
+		return err
 	}
 
 	resp, err := h.Service.Register(c.UserContext(), request)
 	if err != nil {
-		h.Log.Error("failed to process request")
-		return fiber.ErrBadRequest
+		return err
 	}
 
 	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
