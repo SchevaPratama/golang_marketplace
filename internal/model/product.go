@@ -23,15 +23,19 @@ type ProductRequest struct {
 }
 
 type ProductFilter struct {
-	Condition *string   `json:"condition"`
-	Keyword   *string   `json:"keyword"`
-	SortBy    *string   `json:"sortBy"`
-	OrderBy   *string   `json:"orderBy"`
-	MaxPrice  *int      `json:"maxPrice"`
-	MinPrice  *int      `json:"minPrice"`
-	Tags      *[]string `json:"tags"`
+	Condition      *string   `json:"condition"`
+	Keyword        *string   `json:"keyword"`
+	SortBy         *string   `json:"sortBy"`
+	OrderBy        *string   `json:"orderBy"`
+	MaxPrice       *int      `json:"maxPrice"`
+	MinPrice       *int      `json:"minPrice"`
+	Tags           *[]string `json:"tags"`
+	UserOnly       *bool     `json:"userOnly"`
+	ShowEmptyStock *bool     `json:"showEmptyStock"`
+	Limit          *int      `json:"limit"`
+	Offset         *int      `json:"offset"`
 }
 
 type StockRequest struct {
-	Stock int16 `json:"stock" validate:"required,min=0"`
+	Stock int16 `json:"stock" validate:"min=0"`
 }
