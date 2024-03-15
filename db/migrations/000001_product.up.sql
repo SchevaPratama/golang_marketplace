@@ -8,6 +8,7 @@ CREATE TABLE IF NOT EXISTS products (
     stock INT NOT NULL,
     condition VARCHAR(50),
     isPurchasable BOOLEAN DEFAULT TRUE,
+    tags TEXT,
     userId VARCHAR(255) NOT NULL
 );
 CREATE TABLE IF NOT EXISTS product_tags (

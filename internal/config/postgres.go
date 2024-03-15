@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/jmoiron/sqlx"
@@ -23,8 +24,7 @@ func NewDatabase(viper *viper.Viper) *sqlx.DB {
 
 	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
-		fmt.Errorf("error, not connected to database, %w", err)
-		panic("error, not connected to database")
+		log.Fatalf("Failed connect database: %v", err)
 	}
 
 	db.SetMaxIdleConns(idleConnection)
