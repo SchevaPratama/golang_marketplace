@@ -1,18 +1,19 @@
 package handler
 
 import (
-	"github.com/gofiber/fiber/v2"
-	"github.com/sagikazarmark/slog-shim"
 	"golang-marketplace/internal/model"
 	"golang-marketplace/internal/service"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/sirupsen/logrus"
 )
 
 type UserHandler struct {
 	Service *service.UserService
-	Log     *slog.Logger
+	Log     *logrus.Logger
 }
 
-func NewUserHandler(s *service.UserService, log *slog.Logger) *UserHandler {
+func NewUserHandler(s *service.UserService, log *logrus.Logger) *UserHandler {
 	return &UserHandler{
 		Service: s,
 		Log:     log,

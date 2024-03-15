@@ -2,26 +2,27 @@ package service
 
 import (
 	"context"
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
-	jtoken "github.com/golang-jwt/jwt/v4"
-	"github.com/sagikazarmark/slog-shim"
 	"golang-marketplace/internal/entity"
 	helpers "golang-marketplace/internal/helper"
 	"golang-marketplace/internal/model"
 	"golang-marketplace/internal/repository"
-	"golang.org/x/crypto/bcrypt"
 	"log"
 	"time"
+
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	jtoken "github.com/golang-jwt/jwt/v4"
+	"github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type UserService struct {
 	Repository *repository.UserRepository
 	Validate   *validator.Validate
-	Log        *slog.Logger
+	Log        *logrus.Logger
 }
 
-func NewUserService(r *repository.UserRepository, validate *validator.Validate, log *slog.Logger) *UserService {
+func NewUserService(r *repository.UserRepository, validate *validator.Validate, log *logrus.Logger) *UserService {
 	return &UserService{Repository: r, Validate: validate, Log: log}
 }
 

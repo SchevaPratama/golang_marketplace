@@ -31,3 +31,7 @@ type ProductFilter struct {
 	MinPrice  *int      `json:"minPrice"`
 	Tags      *[]string `json:"tags"`
 }
+
+type StockRequest struct {
+	Stock int16 `json:"stock" validate:"required,min=0"`
+}

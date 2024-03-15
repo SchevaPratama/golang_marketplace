@@ -133,3 +133,28 @@ func (s *ProductService) Update(ctx context.Context, id string, request *model.P
 
 	return nil
 }
+
+func (s *ProductService) UpdateStock(ctx context.Context, id string, request *model.StockRequest) error {
+	// if err := s.Validate.Struct(request); err != nil {
+	if err := helpers.ValidationError(s.Validate, request); err != nil {
+		s.Log.WithError(err).Error("failed to validate request body")
+		return err
+	}
+
+	product := new(entity.Product)
+	_, err := s.Repository.Get(id, product)
+	if err != nil {
+		s.Log.WithError(err).Error("failed get product detail")
+		return err
+	}
+
+	product.Stock = request.Stock
+
+	err = s.Repository.UpdateStock(id, product)
+	if err != nil {
+		s.Log.WithError(err).Error("failed to update data")
+		return err
+	}
+
+	return nil
+}
