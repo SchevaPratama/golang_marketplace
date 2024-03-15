@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 
 	"golang-marketplace/internal/entity"
 	helpers "golang-marketplace/internal/helper"
@@ -10,33 +11,31 @@ import (
 	"golang-marketplace/internal/repository"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"github.com/jmoiron/sqlx"
-	"github.com/sagikazarmark/slog-shim"
+	"github.com/sirupsen/logrus"
 )
 
 type ProductService struct {
 	Repository *repository.ProductRepository
 	Validate   *validator.Validate
-	Log        *slog.Logger
-	DB         *sqlx.DB
+	Log        *logrus.Logger
 }
 
-func NewProductService(r *repository.ProductRepository, validate *validator.Validate, log *slog.Logger, db *sqlx.DB) *ProductService {
-	return &ProductService{Repository: r, Validate: validate, Log: log, DB: db}
+func NewProductService(r *repository.ProductRepository, validate *validator.Validate, log *logrus.Logger, db *sqlx.DB) *ProductService {
+	return &ProductService{Repository: r, Validate: validate, Log: log}
 }
 
 func (s *ProductService) List(ctx context.Context, filter *model.ProductFilter) ([]model.ProductRespone, error) {
-	tx, _ := s.DB.Beginx()
-	defer tx.Rollback()
 
 	if err := helpers.ValidationError(s.Validate, filter); err != nil {
-		s.Log.Error("failed to validate request query params")
+		s.Log.WithError(err).Error("failed to validate request query params")
 		return nil, err
 	}
 
-	products, err := s.Repository.List(s.DB, filter)
+	products, err := s.Repository.List(filter)
 	if err != nil {
-		s.Log.Error("failed get product lists")
+		s.Log.WithError(err).Error("failed get product lists")
 		return nil, err
 	}
 
@@ -49,14 +48,12 @@ func (s *ProductService) List(ctx context.Context, filter *model.ProductFilter) 
 }
 
 func (s *ProductService) Get(ctx context.Context, id string) (*model.ProductRespone, error) {
-	tx, _ := s.DB.Beginx()
-	defer tx.Rollback()
-
 	product := new(entity.Product)
 
-	productData, err := s.Repository.Get(s.DB, id, product)
+	productData, err := s.Repository.Get(id, product)
+	fmt.Println(err)
 	if err != nil {
-		s.Log.Error("failed get product detail")
+		s.Log.WithError(err).Error("failed get product detail")
 		return nil, err
 	}
 
@@ -66,25 +63,24 @@ func (s *ProductService) Get(ctx context.Context, id string) (*model.ProductResp
 func (s *ProductService) Create(ctx context.Context, request *model.ProductRequest) error {
 	// if err := s.Validate.Struct(request); err != nil {
 	if err := helpers.ValidationError(s.Validate, request); err != nil {
-		s.Log.Error("failed to validate request body")
+		s.Log.WithError(err).Error("failed to validate request body")
 		return err
 	}
 
-	tx, _ := s.DB.Beginx()
-	defer tx.Rollback()
-
 	newRequest := &entity.Product{
+		ID:            uuid.New().String(),
 		Name:          request.Name,
 		Price:         request.Price,
 		ImageUrl:      request.ImageUrl,
 		Stock:         request.Stock,
 		Condition:     request.Condition,
 		IsPurchasable: request.IsPurchasable,
+		Tags:          request.Tags,
 	}
 
-	err := s.Repository.Create(s.DB, newRequest)
+	err := s.Repository.Create(newRequest)
 	if err != nil {
-		s.Log.Error("failed to insert new data")
+		s.Log.WithError(err).Error("failed to insert new data")
 		return err
 	}
 
@@ -92,20 +88,17 @@ func (s *ProductService) Create(ctx context.Context, request *model.ProductReque
 }
 
 func (s *ProductService) Delete(ctx context.Context, id string) error {
-	tx, _ := s.DB.Beginx()
-	defer tx.Rollback()
+	// product := new(entity.Product)
+	// productData, err := s.Repository.Get(id, product)
+	// if err != nil {
+	// 	s.Log.WithError(err).Error("failed get product detail")
+	// 	return err
+	// }
 
-	product := new(entity.Product)
-	_, err := s.Repository.Get(s.DB, id, product)
-	if err != nil {
-		s.Log.Error("failed get product detail")
-		return err
-	}
-
-	err = s.Repository.Delete(s.DB, product)
-	if err != nil {
-		s.Log.Error("failed to delete data")
-		return err
+	errDel := s.Repository.Delete(id)
+	if errDel != nil {
+		s.Log.WithError(errDel).Error("failed to delete data")
+		return errDel
 	}
 
 	return nil
@@ -114,17 +107,14 @@ func (s *ProductService) Delete(ctx context.Context, id string) error {
 func (s *ProductService) Update(ctx context.Context, id string, request *model.ProductRequest) error {
 	// if err := s.Validate.Struct(request); err != nil {
 	if err := helpers.ValidationError(s.Validate, request); err != nil {
-		s.Log.Error("failed to validate request body")
+		s.Log.WithError(err).Error("failed to validate request body")
 		return err
 	}
 
-	tx, _ := s.DB.Beginx()
-	defer tx.Rollback()
-
 	product := new(entity.Product)
-	_, err := s.Repository.Get(s.DB, id, product)
+	_, err := s.Repository.Get(id, product)
 	if err != nil {
-		s.Log.Error("failed get product detail")
+		s.Log.WithError(err).Error("failed get product detail")
 		return err
 	}
 
@@ -133,10 +123,11 @@ func (s *ProductService) Update(ctx context.Context, id string, request *model.P
 	product.ImageUrl = request.ImageUrl
 	product.Condition = request.Condition
 	product.IsPurchasable = request.IsPurchasable
+	product.Tags = request.Tags
 
-	err = s.Repository.Update(s.DB, id, product)
+	err = s.Repository.Update(id, product)
 	if err != nil {
-		s.Log.Error("failed to update data")
+		s.Log.WithError(err).Error("failed to update data")
 		return err
 	}
 

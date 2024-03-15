@@ -9,7 +9,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	"github.com/sagikazarmark/slog-shim"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -18,7 +18,7 @@ type BootstrapConfig struct {
 	App      *fiber.App
 	Config   *viper.Viper
 	Validate *validator.Validate
-	Log      *slog.Logger
+	Log      *logrus.Logger
 }
 
 func Bootstrap(config *BootstrapConfig) {
