@@ -35,6 +35,7 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// recover from panic
 	config.App.Use(func(c *fiber.Ctx) error {
+
 		defer func() {
 			if r := recover(); r != nil {
 				c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
