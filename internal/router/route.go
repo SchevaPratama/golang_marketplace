@@ -22,5 +22,6 @@ func (c *RouteConfig) Setup() {
 	c.App.Post("/api/product", c.ProductHandler.Create)
 	c.App.Delete("/api/product/:id", c.ProductHandler.Delete)
 	c.App.Put("/api/product/:id", c.ProductHandler.Update)
+	c.App.Post("/api/product/:id/stock", c.ProductHandler.UpdateStock)
 
 }

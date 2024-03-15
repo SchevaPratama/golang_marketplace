@@ -159,6 +159,17 @@ func (r *ProductRepository) Update(id string, request *entity.Product) error {
 	return nil
 }
 
+func (r *ProductRepository) UpdateStock(id string, request *entity.Product) error {
+	query := `UPDATE products SET stock = $2 WHERE id = $1`
+
+	_, err := r.DB.Exec(query, id, request.Stock)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (r *ProductRepository) Delete(id string) error {
 	query := `DELETE FROM products WHERE id = $1`
 	// Send query to database.

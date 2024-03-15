@@ -161,3 +161,38 @@ func (b *ProductHandler) Update(c *fiber.Ctx) error {
 		"data":    request,
 	})
 }
+
+func (b *ProductHandler) UpdateStock(c *fiber.Ctx) error {
+	id, errUUID := uuid.Parse(c.Params("id"))
+	if errUUID != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   errUUID.Error(),
+		})
+	}
+
+	product, err := b.Service.Get(c.UserContext(), id.String())
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"error": true,
+			"msg":   err.Error(),
+		})
+	}
+
+	request := new(model.StockRequest)
+	if err := c.BodyParser(request); err != nil {
+		b.Log.WithError(err).Error("failed to process request")
+		return fiber.ErrBadRequest
+	}
+	product.Stock = request.Stock
+
+	if err := b.Service.UpdateStock(c.UserContext(), id.String(), request); err != nil {
+		return &fiber.Error{Message: err.Error(), Code: 400}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"code":    1,
+		"message": "success Update a product",
+		"data":    product,
+	})
+}
