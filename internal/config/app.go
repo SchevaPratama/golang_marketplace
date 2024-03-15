@@ -1,16 +1,15 @@
 package config
 
 import (
-	"golang-marketplace/internal/handler"
-	"golang-marketplace/internal/repository"
-	"golang-marketplace/internal/router"
-	"golang-marketplace/internal/service"
-
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/sagikazarmark/slog-shim"
 	"github.com/spf13/viper"
+	"golang-marketplace/internal/handler"
+	"golang-marketplace/internal/repository"
+	"golang-marketplace/internal/router"
+	"golang-marketplace/internal/service"
 )
 
 type BootstrapConfig struct {
@@ -33,6 +32,20 @@ func Bootstrap(config *BootstrapConfig) {
 	// setup handler
 	productHandler := handler.NewProductHandler(productService, config.Log)
 	userHandler := handler.NewUserHandler(userService, config.Log)
+
+	// recover from panic
+	config.App.Use(func(c *fiber.Ctx) error {
+		defer func() {
+			if r := recover(); r != nil {
+				c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+					"message": "Internal Server Error",
+				})
+			}
+		}()
+		return c.Next()
+	})
+
+	// setup error handler
 
 	// setup route
 	routeConfig := router.RouteConfig{

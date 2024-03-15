@@ -19,3 +19,10 @@ func (r *UserRepository) Create(request *entity.User) error {
 	_, err := r.DB.Exec(query, request.Name, request.Username, request.Password)
 	return err
 }
+
+func (r *UserRepository) GetByUsername(request *entity.User) error {
+	query := `SELECT * from users where username = $1`
+
+	err := r.DB.Get(request, query, request.Username)
+	return err
+}
