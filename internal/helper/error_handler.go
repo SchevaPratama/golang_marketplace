@@ -8,18 +8,17 @@ import (
 
 func NewErrorHandler() fiber.ErrorHandler {
 	return func(c *fiber.Ctx, err error) error {
-		code := fiber.StatusInternalServerError
-
-		// Retrieve the custom status code if it's a *fiber.Error
 		var e *fiber.Error
 		if errors.As(err, &e) {
-			code = e.Code
+			return c.Status(e.Code).JSON(fiber.Map{
+				"code":    e.Code,
+				"message": e.Message,
+			})
 		}
 
-		return c.Status(code).JSON(fiber.Map{
-			"code":    0,
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"code":    fiber.StatusInternalServerError,
 			"message": err.Error(),
-			"data":    nil,
 		})
 	}
 }
