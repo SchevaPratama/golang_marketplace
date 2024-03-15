@@ -9,6 +9,7 @@ type Product struct {
 	Condition     string
 	IsPurchasable bool
 	PurchaseCount int8
+	Tags          []string
 	UserId        string
 }
 
