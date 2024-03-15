@@ -63,7 +63,7 @@ func (s *ProductService) Get(ctx context.Context, id string) (*model.ProductResp
 func (s *ProductService) Create(ctx context.Context, request *model.ProductRequest) error {
 	// if err := s.Validate.Struct(request); err != nil {
 	if err := helpers.ValidationError(s.Validate, request); err != nil {
-		s.Log.WithError(err).Error("failed to validate request body")
+		//s.Log.Error("failed to validate request body")
 		return err
 	}
 
@@ -80,7 +80,7 @@ func (s *ProductService) Create(ctx context.Context, request *model.ProductReque
 
 	err := s.Repository.Create(newRequest)
 	if err != nil {
-		s.Log.WithError(err).Error("failed to insert new data")
+		//s.Log.Error("failed to insert new data")
 		return err
 	}
 
