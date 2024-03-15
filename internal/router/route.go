@@ -29,7 +29,7 @@ func (c *RouteConfig) Setup() {
 	product.Put("/:id", c.ProductHandler.Update)
 	product.Post("/:id/stock", c.ProductHandler.UpdateStock)
 
-	bankAccount := c.App.Group("/api/bank/account")
+	bankAccount := c.App.Group("/api/bank/account", jwt)
 	bankAccount.Get("/", c.BankAccountHandler.List)
 	bankAccount.Get("/:id", c.BankAccountHandler.Get)
 	bankAccount.Patch("/:id", c.BankAccountHandler.Update)

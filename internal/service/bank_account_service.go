@@ -25,9 +25,9 @@ func NewBankAccountService(r *repository.BankAccountRepository, validate *valida
 	return &BankAccountService{Repository: r, Validate: validate, Log: log}
 }
 
-func (s *BankAccountService) List(ctx context.Context) ([]model.BankAccountResponse, error) {
+func (s *BankAccountService) List(ctx context.Context, userId string) ([]model.BankAccountResponse, error) {
 
-	bankAccounts, err := s.Repository.List()
+	bankAccounts, err := s.Repository.List(userId)
 	if err != nil {
 		s.Log.Error("failed get product lists")
 		return nil, err
@@ -41,10 +41,10 @@ func (s *BankAccountService) List(ctx context.Context) ([]model.BankAccountRespo
 	return newBankAccounts, nil
 }
 
-func (s *BankAccountService) Get(ctx context.Context, id string) (*model.BankAccountResponse, error) {
+func (s *BankAccountService) Get(ctx context.Context, id string, userId string) (*model.BankAccountResponse, error) {
 	bankAccount := new(entity.BankAccount)
 
-	err := s.Repository.Get(id, bankAccount)
+	err := s.Repository.Get(id, bankAccount, userId)
 	if err != nil {
 		s.Log.Error("failed get bank account detail")
 		return nil, &fiber.Error{
@@ -56,7 +56,7 @@ func (s *BankAccountService) Get(ctx context.Context, id string) (*model.BankAcc
 	return converter.BankAccountConverter(bankAccount), nil
 }
 
-func (s *BankAccountService) Create(ctx context.Context, request *model.BankAccountRequest) error {
+func (s *BankAccountService) Create(ctx context.Context, request *model.BankAccountRequest, userId string) error {
 	// handle request
 	err := helpers.ValidationError(s.Validate, request)
 	if err != nil {
@@ -72,7 +72,7 @@ func (s *BankAccountService) Create(ctx context.Context, request *model.BankAcco
 		Name:     request.BankAccountName,
 		Number:   request.BankAccountNumber,
 		BankName: request.BankName,
-		UserId:   uuid.New().String(),
+		UserId:   userId,
 	}
 
 	err = s.Repository.Create(payload)
@@ -87,7 +87,7 @@ func (s *BankAccountService) Create(ctx context.Context, request *model.BankAcco
 	return nil
 }
 
-func (s *BankAccountService) Update(ctx context.Context, id string, request *model.BankAccountRequest) error {
+func (s *BankAccountService) Update(ctx context.Context, id string, request *model.BankAccountRequest, userId string) error {
 	// handle request
 	err := helpers.ValidationError(s.Validate, request)
 	if err != nil {
@@ -99,7 +99,7 @@ func (s *BankAccountService) Update(ctx context.Context, id string, request *mod
 	}
 
 	bankAccount := new(entity.BankAccount)
-	err = s.Repository.Get(id, bankAccount)
+	err = s.Repository.Get(id, bankAccount, userId)
 	if err != nil {
 		s.Log.WithError(err).Error("failed get bankAccount detail: ", err.Error())
 		if err.Error() == "sql: no rows in result set" {
@@ -127,9 +127,9 @@ func (s *BankAccountService) Update(ctx context.Context, id string, request *mod
 	return nil
 }
 
-func (s *BankAccountService) Delete(ctx context.Context, id string) error {
+func (s *BankAccountService) Delete(ctx context.Context, id string, userId string) error {
 	bankAccount := new(entity.BankAccount)
-	err := s.Repository.Get(id, bankAccount)
+	err := s.Repository.Get(id, bankAccount, userId)
 	if err != nil {
 		s.Log.WithError(err).Error("failed get bankAccount detail: ", err.Error())
 		if err.Error() == "sql: no rows in result set" {
