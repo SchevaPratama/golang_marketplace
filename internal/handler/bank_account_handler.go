@@ -22,7 +22,15 @@ func NewBankAccountHandler(s *service.BankAccountService, log *logrus.Logger) *B
 }
 
 func (b *BankAccountHandler) List(c *fiber.Ctx) error {
-	products, err := b.Service.List(c.UserContext())
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
+	products, err := b.Service.List(c.UserContext(), userId)
 	if err != nil {
 		return err
 	}
@@ -34,12 +42,20 @@ func (b *BankAccountHandler) List(c *fiber.Ctx) error {
 }
 
 func (b *BankAccountHandler) Get(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return err
 	}
 
-	bankAccount, err := b.Service.Get(c.UserContext(), id.String())
+	bankAccount, err := b.Service.Get(c.UserContext(), id.String(), userId)
 	if err != nil {
 		return err
 	}
@@ -51,6 +67,14 @@ func (b *BankAccountHandler) Get(c *fiber.Ctx) error {
 }
 
 func (b *BankAccountHandler) Create(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
 	request := new(model.BankAccountRequest)
 
 	if err := c.BodyParser(request); err != nil {
@@ -58,7 +82,7 @@ func (b *BankAccountHandler) Create(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	err := b.Service.Create(c.UserContext(), request)
+	err := b.Service.Create(c.UserContext(), request, userId)
 	if err != nil {
 		return err
 	}
@@ -69,6 +93,14 @@ func (b *BankAccountHandler) Create(c *fiber.Ctx) error {
 }
 
 func (b *BankAccountHandler) Update(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return err
@@ -80,7 +112,7 @@ func (b *BankAccountHandler) Update(c *fiber.Ctx) error {
 		return fiber.ErrBadRequest
 	}
 
-	err = b.Service.Update(c.UserContext(), id.String(), request)
+	err = b.Service.Update(c.UserContext(), id.String(), request, userId)
 	if err != nil {
 		return err
 	}
@@ -91,6 +123,14 @@ func (b *BankAccountHandler) Update(c *fiber.Ctx) error {
 }
 
 func (b *BankAccountHandler) Delete(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
 	id, err := uuid.Parse(c.Params("id"))
 	if err != nil {
 		return &fiber.Error{
@@ -99,7 +139,7 @@ func (b *BankAccountHandler) Delete(c *fiber.Ctx) error {
 		}
 	}
 
-	err = b.Service.Delete(c.UserContext(), id.String())
+	err = b.Service.Delete(c.UserContext(), id.String(), userId)
 	if err != nil {
 		return err
 	}

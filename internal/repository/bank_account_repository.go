@@ -15,11 +15,11 @@ func NewBankAccountRepository(db *sqlx.DB) *BankAccountRepository {
 	return &BankAccountRepository{DB: db}
 }
 
-func (r *BankAccountRepository) List() ([]entity.BankAccount, error) {
+func (r *BankAccountRepository) List(userId string) ([]entity.BankAccount, error) {
 	bankAccounts := []entity.BankAccount{}
 
-	query := `SELECT id, name, number, bank_name, user_id FROM bank_accounts`
-	err := r.DB.Select(&bankAccounts, query)
+	query := `SELECT id, name, number, bank_name, user_id FROM bank_accounts WHERE user_id = $1`
+	err := r.DB.Select(&bankAccounts, query, userId)
 	if err != nil {
 		return nil, err
 	}
@@ -27,10 +27,10 @@ func (r *BankAccountRepository) List() ([]entity.BankAccount, error) {
 	return bankAccounts, nil
 }
 
-func (r *BankAccountRepository) Get(id string, bankAccount *entity.BankAccount) error {
+func (r *BankAccountRepository) Get(id string, bankAccount *entity.BankAccount, userId string) error {
 
-	query := `SELECT id, name, number, bank_name, user_id FROM bank_accounts WHERE id = $1`
-	err := r.DB.Get(bankAccount, query, id)
+	query := `SELECT id, name, number, bank_name, user_id FROM bank_accounts WHERE id = $1 AND user_id = $2`
+	err := r.DB.Get(bankAccount, query, id, userId)
 	if err != nil {
 		fmt.Println(err)
 		return err
