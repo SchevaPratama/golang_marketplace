@@ -26,3 +26,10 @@ func (r *UserRepository) GetByUsername(request *entity.User) error {
 	err := r.DB.Get(request, query, request.Username)
 	return err
 }
+
+func (r *UserRepository) GetById(request *entity.User) error {
+	query := `SELECT * from users where username = $1`
+
+	err := r.DB.Get(request, query, request.ID)
+	return err
+}
