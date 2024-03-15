@@ -18,15 +18,13 @@ func NewProductRepository(db *sqlx.DB) *ProductRepository {
 	return &ProductRepository{DB: db}
 }
 
-func (r *ProductRepository) List(filter *model.ProductFilter) ([]entity.Product, error) {
+func (r *ProductRepository) List(filter *model.ProductFilter, userId string) ([]entity.Product, error) {
 	tx, _ := r.DB.Beginx()
 	defer tx.Rollback()
 	// product := []entity.Product{}
 
 	query := `SELECT * FROM products`
 	var filterValues []interface{}
-
-	// fmt.Println(*filter.Tags)
 
 	// Conditionally append filters
 	if *filter.Keyword != "" {
@@ -72,7 +70,35 @@ func (r *ProductRepository) List(filter *model.ProductFilter) ([]entity.Product,
 		filterValues = append(filterValues, pq.Array([]string{"perabotan"}))
 	}
 
-	fmt.Println(query)
+	if filter.UserOnly != nil && *filter.UserOnly {
+		if len(filterValues) > 0 {
+			query += ` AND `
+		} else {
+			query += ` WHERE `
+		}
+		query += ` userId = $` + strconv.Itoa(len(filterValues)+1)
+		filterValues = append(filterValues, userId)
+	}
+
+	if filter.ShowEmptyStock != nil && *filter.ShowEmptyStock {
+		if len(filterValues) > 0 {
+			query += ` AND `
+		} else {
+			query += ` WHERE `
+		}
+		query += ` stock = $` + strconv.Itoa(len(filterValues)+1)
+		filterValues = append(filterValues, 0)
+	}
+
+	if *filter.Limit != 0 {
+		query += fmt.Sprintf(" LIMIT $%s", strconv.Itoa(len(filterValues)+1))
+		filterValues = append(filterValues, filter.Limit)
+	}
+
+	if *filter.Offset != 0 {
+		query += fmt.Sprintf(" OFFSET $%s", strconv.Itoa(len(filterValues)+1))
+		filterValues = append(filterValues, filter.Offset)
+	}
 
 	// Execute the query
 	rows, err := r.DB.Query(query, filterValues...)
@@ -94,9 +120,6 @@ func (r *ProductRepository) List(filter *model.ProductFilter) ([]entity.Product,
 		}
 		products = append(products, product)
 	}
-
-	fmt.Println(filter.Tags)
-	fmt.Println(products)
 
 	// Check for errors from iterating over rows.
 	if err = rows.Err(); err != nil {
@@ -144,7 +167,7 @@ func (r *ProductRepository) Get(id string, product *entity.Product) (entity.Prod
 func (r *ProductRepository) Create(request *entity.Product) error {
 	query := `INSERT INTO products VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`
 
-	_, err := r.DB.Exec(query, request.ID, request.Name, request.Price, request.ImageUrl, request.Stock, request.Condition, request.IsPurchasable, pq.Array(request.Tags), "1")
+	_, err := r.DB.Exec(query, request.ID, request.Name, request.Price, request.ImageUrl, request.Stock, request.Condition, request.IsPurchasable, pq.Array(request.Tags), request.UserId)
 	return err
 }
 

@@ -26,14 +26,14 @@ func NewProductService(r *repository.ProductRepository, validate *validator.Vali
 	return &ProductService{Repository: r, Validate: validate, Log: log}
 }
 
-func (s *ProductService) List(ctx context.Context, filter *model.ProductFilter) ([]model.ProductRespone, error) {
+func (s *ProductService) List(ctx context.Context, filter *model.ProductFilter, userId string) ([]model.ProductRespone, error) {
 
 	if err := helpers.ValidationError(s.Validate, filter); err != nil {
 		s.Log.WithError(err).Error("failed to validate request query params")
 		return nil, err
 	}
 
-	products, err := s.Repository.List(filter)
+	products, err := s.Repository.List(filter, userId)
 	if err != nil {
 		s.Log.WithError(err).Error("failed get product lists")
 		return nil, err
@@ -60,10 +60,10 @@ func (s *ProductService) Get(ctx context.Context, id string) (*model.ProductResp
 	return converter.ProductConverter(&productData), nil
 }
 
-func (s *ProductService) Create(ctx context.Context, request *model.ProductRequest) error {
+func (s *ProductService) Create(ctx context.Context, request *model.ProductRequest, userId string) error {
 	// if err := s.Validate.Struct(request); err != nil {
 	if err := helpers.ValidationError(s.Validate, request); err != nil {
-		//s.Log.Error("failed to validate request body")
+		s.Log.Error("failed to validate request body")
 		return err
 	}
 
@@ -76,6 +76,7 @@ func (s *ProductService) Create(ctx context.Context, request *model.ProductReque
 		Condition:     request.Condition,
 		IsPurchasable: request.IsPurchasable,
 		Tags:          request.Tags,
+		UserId:        userId,
 	}
 
 	err := s.Repository.Create(newRequest)

@@ -23,28 +23,42 @@ func NewProductHandler(s *service.ProductService, log *logrus.Logger) *ProductHa
 }
 
 func (b *ProductHandler) List(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
 	keyword := c.Query("search")
 	condition := c.Query("condition")
 	sortBy := c.Query("sortBy")
 	orderBy := c.Query("orderBy")
 	maxPrice, _ := strconv.Atoi(c.Query("maxPrice"))
 	minPrice, _ := strconv.Atoi(c.Query("minPrice"))
+	userOnly, _ := strconv.ParseBool(c.Query("userOnly"))
+	showEmptyStock, _ := strconv.ParseBool(c.Query("showEmptyStock"))
+	limit, _ := strconv.Atoi(c.Query("limit"))
+	offset, _ := strconv.Atoi(c.Query("offset"))
 
 	filter := &model.ProductFilter{
-		Condition: &condition,
-		Keyword:   &keyword,
-		SortBy:    &sortBy,
-		OrderBy:   &orderBy,
-		MaxPrice:  &maxPrice,
-		MinPrice:  &minPrice,
-	}
+		Condition:      &condition,
+		Keyword:        &keyword,
+		SortBy:         &sortBy,
+		OrderBy:        &orderBy,
+		MaxPrice:       &maxPrice,
+		MinPrice:       &minPrice,
+		UserOnly:       &userOnly,
+		ShowEmptyStock: &showEmptyStock,
+		Limit:          &limit,
+		Offset:         &offset}
 
 	if err := c.QueryParser(filter); err != nil {
 		b.Log.WithError(err).Error("failed to process request")
 		return fiber.ErrBadRequest
 	}
 
-	products, err := b.Service.List(c.UserContext(), filter)
+	products, err := b.Service.List(c.UserContext(), filter, userId)
 	if err != nil {
 		return err
 	}
@@ -52,6 +66,11 @@ func (b *ProductHandler) List(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"message": "ok",
 		"data":    products,
+		"meta": fiber.Map{
+			"limit":  limit,
+			"offset": offset,
+			"total":  len(products),
+		},
 	})
 }
 
@@ -80,6 +99,14 @@ func (b *ProductHandler) Get(c *fiber.Ctx) error {
 }
 
 func (b *ProductHandler) Create(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
 	request := new(model.ProductRequest)
 
 	if err := c.BodyParser(request); err != nil {
@@ -88,7 +115,7 @@ func (b *ProductHandler) Create(c *fiber.Ctx) error {
 		// return &fiber.Error{Message: "Opppss", Code: 400}
 	}
 
-	err := b.Service.Create(c.UserContext(), request)
+	err := b.Service.Create(c.UserContext(), request, userId)
 	if err != nil {
 		// return fiber.ErrBadRequest
 		return &fiber.Error{Message: err.Error(), Code: 400}
