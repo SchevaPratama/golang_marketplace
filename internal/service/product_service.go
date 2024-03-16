@@ -11,6 +11,7 @@ import (
 	"golang-marketplace/internal/repository"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/sirupsen/logrus"
 )
@@ -154,6 +155,52 @@ func (s *ProductService) UpdateStock(ctx context.Context, id string, request *mo
 	err = s.Repository.UpdateStock(id, product)
 	if err != nil {
 		s.Log.WithError(err).Error("failed to update data")
+		return err
+	}
+
+	return nil
+}
+
+func (s *ProductService) Buy(ctx context.Context, request *model.BuyRequest, userId string) error {
+	if err := helpers.ValidationError(s.Validate, request); err != nil {
+		s.Log.Error("validation error: ", err.Error())
+		return &fiber.Error{
+			Code:    400,
+			Message: err.Error(),
+		}
+	}
+
+	product := new(entity.Product)
+	_, err := s.Repository.Get(request.ProductId, product)
+	if err != nil {
+		s.Log.WithError(err).Error("failed get product detail")
+		return err
+	}
+
+	// should be enhancement (?)
+	// if product.ID == "" {
+	// 	s.Log.WithError(nil).Error("failed get product detail")
+	// 	return &fiber.Error{
+	// 		Code:    404,
+	// 		Message: "Product not found",
+	// 	}
+	// }
+
+	newRequest := &entity.Payment{
+		ID:                   uuid.New().String(),
+		BankAccountId:        request.BankAccountId,
+		ProductId:            request.ProductId,
+		Quantity:             int(request.Quantity),
+		PaymentProofImageUrl: request.PaymentProofImageUrl,
+	}
+
+	err = s.Repository.Buy(newRequest)
+	if err != nil {
+		s.Log.Error("failed to insert new data: ", err.Error())
+		// return &fiber.Error{
+		// 	Code:    500,
+		// 	Message: err.Error(),
+		// }
 		return err
 	}
 
