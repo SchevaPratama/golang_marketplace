@@ -8,24 +8,24 @@ import (
 )
 
 type RouteConfig struct {
-	App            *fiber.App
-	ProductHandler *handler.ProductHandler
-	UserHandler    *handler.UserHandler
-	ImageHandler   *handler.ImageHandler
+	App                *fiber.App
+	ProductHandler     *handler.ProductHandler
+	UserHandler        *handler.UserHandler
+	ImageHandler       *handler.ImageHandler
 	BankAccountHandler *handler.BankAccountHandler
 }
 
 func (c *RouteConfig) Setup() {
 
-	jwt := middleware.NewAuthMiddleware("secret")
+	authMiddleware := middleware.NewAuthMiddleware("secret")
 
 	c.App.Post("/api/user/register", c.UserHandler.Register)
 	c.App.Post("api/user/login", c.UserHandler.Login)
 
-	image := c.App.Group("/api/image", jwt)
+	image := c.App.Group("/api/image", authMiddleware)
 	image.Post("/", c.ImageHandler.Upload)
 
-	product := c.App.Group("/api/product", jwt)
+	product := c.App.Group("/api/product", authMiddleware)
 	product.Get("", c.ProductHandler.List)
 	product.Post("", c.ProductHandler.Create)
 	product.Get("/:id", c.ProductHandler.Get)
@@ -33,16 +33,10 @@ func (c *RouteConfig) Setup() {
 	product.Put("/:id", c.ProductHandler.Update)
 	product.Post("/:id/stock", c.ProductHandler.UpdateStock)
 
-	bankAccount := c.App.Group("/api/bank/account", jwt)
+	bankAccount := c.App.Group("/api/bank/account", authMiddleware)
 	bankAccount.Get("/", c.BankAccountHandler.List)
 	bankAccount.Get("/:id", c.BankAccountHandler.Get)
 	bankAccount.Patch("/:id", c.BankAccountHandler.Update)
 	bankAccount.Delete("/:id", c.BankAccountHandler.Delete)
 	bankAccount.Post("/", c.BankAccountHandler.Create)
-
-	//c.App.Get("/api/product", jwt, c.ProductHandler.List)
-	//c.App.Get("/api/product/:id", c.ProductHandler.Get)
-	//c.App.Post("/api/product", c.ProductHandler.Create)
-	//c.App.Delete("/api/product/:id", c.ProductHandler.Delete)
-	//c.App.Put("/api/product/:id", c.ProductHandler.Update)
 }
