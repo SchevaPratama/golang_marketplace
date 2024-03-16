@@ -1,16 +1,16 @@
 package config
 
 import (
-	"golang-marketplace/internal/handler"
-	"golang-marketplace/internal/repository"
-	"golang-marketplace/internal/router"
-	"golang-marketplace/internal/service"
-
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"golang-marketplace/internal/handler"
+	"golang-marketplace/internal/repository"
+	"golang-marketplace/internal/router"
+	"golang-marketplace/internal/service"
 )
 
 type BootstrapConfig struct {
@@ -19,16 +19,21 @@ type BootstrapConfig struct {
 	Config   *viper.Viper
 	Validate *validator.Validate
 	Log      *logrus.Logger
+	Aws      *s3.Client
 }
 
 func Bootstrap(config *BootstrapConfig) {
+	// aws
+	aws := NewAws(config.Config)
+
 	// setup repositories
 	userRepository := repository.NewUserRepository(config.DB)
 	productRepository := repository.NewProductRepository(config.DB)
 	bankAccountRepository := repository.NewBankAccountRepository(config.DB)
 
 	// setup services
-	productService := service.NewProductService(productRepository, config.Validate, config.Log, config.DB)
+	imageService := service.NewImageService(aws, config.Validate, config.Log)
+	productService := service.NewProductService(productRepository, imageService, config.Validate, config.Log)
 	userService := service.NewUserService(userRepository, config.Validate, config.Log)
 	bankAccountService := service.NewBankAccountService(bankAccountRepository, config.Validate, config.Log)
 
@@ -36,6 +41,7 @@ func Bootstrap(config *BootstrapConfig) {
 	productHandler := handler.NewProductHandler(productService, config.Log)
 	userHandler := handler.NewUserHandler(userService, config.Log)
 	bankAccountHandler := handler.NewBankAccountHandler(bankAccountService, config.Log)
+	ImageHandler := handler.NewImageHandler(imageService, config.Log)
 
 	// recover from panic
 	config.App.Use(func(c *fiber.Ctx) error {
@@ -50,13 +56,12 @@ func Bootstrap(config *BootstrapConfig) {
 		return c.Next()
 	})
 
-	// setup error handler
-
 	// setup route
 	routeConfig := router.RouteConfig{
-		App:                config.App,
-		ProductHandler:     productHandler,
-		UserHandler:        userHandler,
+		App:            config.App,
+		ProductHandler: productHandler,
+		UserHandler:    userHandler,
+		ImageHandler:   ImageHandler,
 		BankAccountHandler: bankAccountHandler,
 	}
 

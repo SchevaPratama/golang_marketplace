@@ -8,9 +8,10 @@ import (
 )
 
 type RouteConfig struct {
-	App                *fiber.App
-	ProductHandler     *handler.ProductHandler
-	UserHandler        *handler.UserHandler
+	App            *fiber.App
+	ProductHandler *handler.ProductHandler
+	UserHandler    *handler.UserHandler
+	ImageHandler   *handler.ImageHandler
 	BankAccountHandler *handler.BankAccountHandler
 }
 
@@ -21,10 +22,13 @@ func (c *RouteConfig) Setup() {
 	c.App.Post("/api/user/register", c.UserHandler.Register)
 	c.App.Post("api/user/login", c.UserHandler.Login)
 
+	image := c.App.Group("/api/image", jwt)
+	image.Post("/", c.ImageHandler.Upload)
+
 	product := c.App.Group("/api/product", jwt)
-	product.Get("/", c.ProductHandler.List)
+	product.Get("", c.ProductHandler.List)
+	product.Post("", c.ProductHandler.Create)
 	product.Get("/:id", c.ProductHandler.Get)
-	product.Post("/", c.ProductHandler.Create)
 	product.Delete("/:id", c.ProductHandler.Delete)
 	product.Put("/:id", c.ProductHandler.Update)
 	product.Post("/:id/stock", c.ProductHandler.UpdateStock)
