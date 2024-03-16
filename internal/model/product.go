@@ -39,3 +39,10 @@ type ProductFilter struct {
 type StockRequest struct {
 	Stock int16 `json:"stock" validate:"min=0"`
 }
+
+type BuyRequest struct {
+	BankAccountId        string `json:"bankAccountId" validate:"required"`
+	ProductId            string `json:"productId" validate:"required"`
+	PaymentProofImageUrl string `json:"paymentProofImageUrl" validate:"required,url"`
+	Quantity             int16  `json:"quantity" validate:"required,min=1"`
+}

@@ -32,6 +32,7 @@ func (c *RouteConfig) Setup() {
 	product.Delete("/:id", c.ProductHandler.Delete)
 	product.Put("/:id", c.ProductHandler.Update)
 	product.Post("/:id/stock", c.ProductHandler.UpdateStock)
+	product.Post("/:id/buy", c.ProductHandler.Buy)
 
 	bankAccount := c.App.Group("/api/bank/account", authMiddleware)
 	bankAccount.Get("/", c.BankAccountHandler.List)

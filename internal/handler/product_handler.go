@@ -223,3 +223,40 @@ func (b *ProductHandler) UpdateStock(c *fiber.Ctx) error {
 		"data":    product,
 	})
 }
+
+func (b *ProductHandler) Buy(c *fiber.Ctx) error {
+	userId, ok := c.Locals("userLoggedInId").(string)
+	if !ok {
+		return &fiber.Error{
+			Code:    500,
+			Message: "Failed",
+		}
+	}
+
+	id, errUUID := uuid.Parse(c.Params("id"))
+	if errUUID != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error": true,
+			"msg":   errUUID.Error(),
+		})
+	}
+
+	request := new(model.BuyRequest)
+
+	if err := c.BodyParser(request); err != nil {
+		b.Log.WithError(err).Error("failed to process request")
+		return fiber.ErrBadRequest
+	}
+
+	request.ProductId = id.String()
+
+	err := b.Service.Buy(c.UserContext(), request, userId)
+	if err != nil {
+		return err
+	}
+
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
+		"message": "payment processed successfully",
+		"data":    request,
+	})
+}

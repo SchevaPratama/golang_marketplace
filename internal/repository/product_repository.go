@@ -6,6 +6,7 @@ import (
 	"golang-marketplace/internal/model"
 	"strconv"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 )
@@ -203,5 +204,54 @@ func (r *ProductRepository) Delete(id string) error {
 	}
 
 	// This query returns nothing.
+	return nil
+}
+
+func (r *ProductRepository) Buy(request *entity.Payment) error {
+	tx, err := r.DB.Beginx()
+	if err != nil {
+		return err
+	}
+
+	defer tx.Rollback()
+
+	// Lock the table
+	// if _, err := tx.Exec("LOCK TABLE products IN SHARE MODE"); err != nil {
+	// 	return err
+	// }
+
+	product := new(entity.Product)
+	query := `SELECT stock FROM products WHERE id = $1 FOR NO KEY UPDATE`
+	err = tx.Get(product, query, request.ProductId)
+	if err != nil {
+		return err
+	}
+
+	if request.Quantity > int(product.Stock) {
+		return &fiber.Error{
+			Code:    400,
+			Message: "insufficient quantity",
+		}
+	}
+
+	insertQuery := `INSERT INTO payments VALUES ($1, $2, $3, $4, $5)`
+	_, err = tx.Exec(insertQuery, request.ID, request.BankAccountId, request.PaymentProofImageUrl, request.ProductId, request.Quantity)
+	if err != nil {
+		return err
+	}
+
+	// newStock := int(product.Stock) - request.Quantity
+	updateQuery := `UPDATE products SET stock = stock - $1 WHERE id = $2`
+	// _, err = tx.Exec(updateQuery, newStock, request.ProductId)
+	_, err = tx.Exec(updateQuery, request.Quantity, request.ProductId)
+	if err != nil {
+		return err
+	}
+
+	// Commit the transaction
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+
 	return nil
 }
