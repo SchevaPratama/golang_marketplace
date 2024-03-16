@@ -1,9 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"golang-marketplace/internal/entity"
 	"golang-marketplace/internal/model"
+	"log"
 	"strconv"
 
 	"github.com/gofiber/fiber/v2"
@@ -147,6 +149,15 @@ func (r *ProductRepository) Get(id string, product *entity.Product) (entity.Prod
 		return productData, err
 	}
 
+	// log.Println(rows.Next())
+
+	// // Check if there are any rows
+	// if !rows.Next() {
+	// 	log.Println("empty data")
+	// 	// No rows were returned
+	// 	return productData, fmt.Errorf("no rows returned")
+	// }
+
 	// Loop through the rows and scan each product into the slice
 	for rows.Next() {
 		var product entity.Product
@@ -158,8 +169,14 @@ func (r *ProductRepository) Get(id string, product *entity.Product) (entity.Prod
 		productData = product
 	}
 
-	if err != nil {
+	log.Println(productData.Name == "")
+	// Check for errors from iterating over rows.
+	if err := rows.Err(); err != nil {
 		return productData, err
+	}
+	// Check for no results
+	if productData.Name == "" {
+		return productData, errors.New("No Data Found")
 	}
 
 	return productData, nil
