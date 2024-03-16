@@ -8,6 +8,11 @@
   "log": {
     "level": 6
   },
+  "aws" : {
+    "id": "AKIAYFGKTK6VHJB4FQPW",
+    "secret": "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",
+    "bucket_name": "sprint-bucket-public-read"
+  },
   "database": {
     "username": "postgres",
     "password": "root",

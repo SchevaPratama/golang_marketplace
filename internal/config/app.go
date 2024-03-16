@@ -1,6 +1,7 @@
 package config
 
 import (
+	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
@@ -18,20 +19,26 @@ type BootstrapConfig struct {
 	Config   *viper.Viper
 	Validate *validator.Validate
 	Log      *logrus.Logger
+	Aws      *s3.Client
 }
 
 func Bootstrap(config *BootstrapConfig) {
+	// aws
+	aws := NewAws(config.Config)
+
 	// setup repositories
 	userRepository := repository.NewUserRepository(config.DB)
 	productRepository := repository.NewProductRepository(config.DB)
 
 	// setup services
-	productService := service.NewProductService(productRepository, config.Validate, config.Log, config.DB)
+	imageService := service.NewImageService(aws, config.Validate, config.Log)
+	productService := service.NewProductService(productRepository, imageService, config.Validate, config.Log)
 	userService := service.NewUserService(userRepository, config.Validate, config.Log)
 
 	// setup handler
 	productHandler := handler.NewProductHandler(productService, config.Log)
 	userHandler := handler.NewUserHandler(userService, config.Log)
+	ImageHandler := handler.NewImageHandler(imageService, config.Log)
 
 	// recover from panic
 	config.App.Use(func(c *fiber.Ctx) error {
@@ -46,13 +53,12 @@ func Bootstrap(config *BootstrapConfig) {
 		return c.Next()
 	})
 
-	// setup error handler
-
 	// setup route
 	routeConfig := router.RouteConfig{
 		App:            config.App,
 		ProductHandler: productHandler,
 		UserHandler:    userHandler,
+		ImageHandler:   ImageHandler,
 	}
 
 	routeConfig.Setup()

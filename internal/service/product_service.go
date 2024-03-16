@@ -12,18 +12,18 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 )
 
 type ProductService struct {
-	Repository *repository.ProductRepository
-	Validate   *validator.Validate
-	Log        *logrus.Logger
+	Repository   *repository.ProductRepository
+	ImageService *ImageService
+	Validate     *validator.Validate
+	Log          *logrus.Logger
 }
 
-func NewProductService(r *repository.ProductRepository, validate *validator.Validate, log *logrus.Logger, db *sqlx.DB) *ProductService {
-	return &ProductService{Repository: r, Validate: validate, Log: log}
+func NewProductService(r *repository.ProductRepository, i *ImageService, validate *validator.Validate, log *logrus.Logger) *ProductService {
+	return &ProductService{Repository: r, ImageService: i, Validate: validate, Log: log}
 }
 
 func (s *ProductService) List(ctx context.Context, filter *model.ProductFilter) ([]model.ProductRespone, error) {
