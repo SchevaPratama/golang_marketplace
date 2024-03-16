@@ -2,6 +2,10 @@ package service
 
 import (
 	"context"
+	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/fiber/v2"
+	jtoken "github.com/golang-jwt/jwt/v4"
+	"github.com/sirupsen/logrus"
 	"golang-marketplace/internal/entity"
 	helpers "golang-marketplace/internal/helper"
 	"golang-marketplace/internal/model"
@@ -9,10 +13,6 @@ import (
 	"log"
 	"time"
 
-	"github.com/go-playground/validator/v10"
-	"github.com/gofiber/fiber/v2"
-	jtoken "github.com/golang-jwt/jwt/v4"
-	"github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -32,7 +32,7 @@ func (s *UserService) Register(ctx context.Context, request *model.RegisterReque
 	err := helpers.ValidationError(s.Validate, request)
 	if err != nil {
 		return nil, &fiber.Error{
-			Code:    400,
+			Code:    fiber.StatusBadRequest,
 			Message: err.Error(),
 		}
 	}
@@ -40,7 +40,7 @@ func (s *UserService) Register(ctx context.Context, request *model.RegisterReque
 	user, err := s.getUsername(request.Username)
 	if user != nil {
 		return nil, &fiber.Error{
-			Code:    409,
+			Code:    fiber.StatusConflict,
 			Message: "Username already exists",
 		}
 	}
@@ -106,7 +106,7 @@ func (s *UserService) Login(ctx context.Context, request *model.LoginRequest) (*
 	if err != nil {
 		log.Println("Error Password is Wrong")
 		return nil, &fiber.Error{
-			Code:    400,
+			Code:    fiber.StatusBadRequest,
 			Message: "Password is wrong",
 		}
 	}
@@ -142,7 +142,7 @@ func (s *UserService) getUsername(username string) (*entity.User, error) {
 	if err != nil {
 		log.Println("Error Get User by Username")
 		return nil, &fiber.Error{
-			Code:    404,
+			Code:    fiber.StatusNotFound,
 			Message: "User NotFound",
 		}
 	}
