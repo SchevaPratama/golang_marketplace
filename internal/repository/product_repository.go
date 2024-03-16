@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"golang-marketplace/internal/entity"
 	"golang-marketplace/internal/model"
-	"log"
 	"strconv"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
@@ -68,9 +68,8 @@ func (r *ProductRepository) List(filter *model.ProductFilter, userId string) ([]
 			query += ` WHERE `
 		}
 
-		query += `tags = ANY($` + strconv.Itoa(len(filterValues)+1) + `)`
-		// query += `tags && $` + strconv.Itoa(len(filterValues)+1)
-		filterValues = append(filterValues, pq.Array([]string{"perabotan"}))
+		tags := strings.Join(*filter.Tags, "','")
+		query += "ARRAY['" + tags + "']::text[] <@ tags::text[]"
 	}
 
 	if filter.UserOnly != nil && *filter.UserOnly {
@@ -149,15 +148,6 @@ func (r *ProductRepository) Get(id string, product *entity.Product) (entity.Prod
 		return productData, err
 	}
 
-	// log.Println(rows.Next())
-
-	// // Check if there are any rows
-	// if !rows.Next() {
-	// 	log.Println("empty data")
-	// 	// No rows were returned
-	// 	return productData, fmt.Errorf("no rows returned")
-	// }
-
 	// Loop through the rows and scan each product into the slice
 	for rows.Next() {
 		var product entity.Product
@@ -169,7 +159,6 @@ func (r *ProductRepository) Get(id string, product *entity.Product) (entity.Prod
 		productData = product
 	}
 
-	log.Println(productData.Name == "")
 	// Check for errors from iterating over rows.
 	if err := rows.Err(); err != nil {
 		return productData, err

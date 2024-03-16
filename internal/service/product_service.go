@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"fmt"
 
 	"golang-marketplace/internal/entity"
 	helpers "golang-marketplace/internal/helper"
@@ -52,7 +51,6 @@ func (s *ProductService) Get(ctx context.Context, id string) (*model.ProductResp
 	product := new(entity.Product)
 
 	productData, err := s.Repository.Get(id, product)
-	fmt.Println(err)
 	if err != nil {
 		s.Log.WithError(err).Error("failed get product detail")
 		return nil, err
