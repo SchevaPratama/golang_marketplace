@@ -1,16 +1,17 @@
 package config
 
 import (
+	"golang-marketplace/internal/handler"
+	"golang-marketplace/internal/repository"
+	"golang-marketplace/internal/router"
+	"golang-marketplace/internal/service"
+
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
-	"golang-marketplace/internal/handler"
-	"golang-marketplace/internal/repository"
-	"golang-marketplace/internal/router"
-	"golang-marketplace/internal/service"
 )
 
 type BootstrapConfig struct {
@@ -58,10 +59,10 @@ func Bootstrap(config *BootstrapConfig) {
 
 	// setup route
 	routeConfig := router.RouteConfig{
-		App:            config.App,
-		ProductHandler: productHandler,
-		UserHandler:    userHandler,
-		ImageHandler:   ImageHandler,
+		App:                config.App,
+		ProductHandler:     productHandler,
+		UserHandler:        userHandler,
+		ImageHandler:       ImageHandler,
 		BankAccountHandler: bankAccountHandler,
 	}
 
