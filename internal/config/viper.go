@@ -1,14 +1,15 @@
 package config
 
 import (
+	"log"
+
 	"github.com/joho/godotenv"
 	"github.com/spf13/viper"
-	"log"
 )
 
 func NewViper() *viper.Viper {
 	config := viper.New()
-	err := godotenv.Load()
+	err := godotenv.Load("/Users/efishery/Documents/marketplace_golang/.env")
 	if err != nil {
 		log.Fatalf("Error loading .env file: %v", err)
 	}

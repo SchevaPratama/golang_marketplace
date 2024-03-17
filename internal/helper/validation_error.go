@@ -3,6 +3,7 @@ package helpers
 import (
 	"errors"
 	"fmt"
+	"sync"
 
 	"github.com/go-playground/locales/en"
 	ut "github.com/go-playground/universal-translator"
@@ -14,11 +15,15 @@ import (
 var (
 	uni      *ut.UniversalTranslator
 	validate *validator.Validate
+	mutex    sync.Mutex // Mutex for synchronizing map access
 )
 
 func ValidationError(validate *validator.Validate, request interface{}) error {
+	mutex.Lock()         // Lock the mutex before accessing the map
+	defer mutex.Unlock() // Ensure the mutex is unlocked after accessing the map
+
 	en := en.New()
-	uni := ut.New(en, en)
+	uni = ut.New(en, en)
 
 	trans, _ := uni.GetTranslator("en")
 	en_translations.RegisterDefaultTranslations(validate, trans)
@@ -28,7 +33,6 @@ func ValidationError(validate *validator.Validate, request interface{}) error {
 	var errMessage string
 
 	if err != nil {
-
 		errs := err.(validator.ValidationErrors)
 
 		for i, e := range errs {
