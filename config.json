@@ -15,7 +15,7 @@
   },
   "database": {
     "username": "postgres",
-    "password": "root",
+    "password": "1234",
     "host": "localhost",
     "port": 5432,
     "name": "golang_marketplace",

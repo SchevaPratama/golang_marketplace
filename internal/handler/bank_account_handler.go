@@ -101,9 +101,18 @@ func (b *BankAccountHandler) Update(c *fiber.Ctx) error {
 		}
 	}
 
-	id, err := uuid.Parse(c.Params("id"))
+	idParam := c.Params("id")
+	if idParam == "" {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "Not Found",
+		})
+	}
+
+	id, err := uuid.Parse(idParam)
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+			"message": "Not Found",
+		})
 	}
 
 	request := new(model.BankAccountRequest)

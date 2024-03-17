@@ -1,10 +1,10 @@
 package router
 
 import (
+	"github.com/gofiber/fiber/v2"
 	"golang-marketplace/internal/handler"
 	"golang-marketplace/internal/middleware"
-
-	"github.com/gofiber/fiber/v2"
+	"net/http"
 )
 
 type RouteConfig struct {
@@ -17,7 +17,7 @@ type RouteConfig struct {
 
 func (c *RouteConfig) Setup() {
 
-	authMiddleware := middleware.NewAuthMiddleware("secret")
+	authMiddleware := middleware.NewAuthMiddleware()
 
 	c.App.Post("/v1/user/register", c.UserHandler.Register)
 	c.App.Post("/v1/user/login", c.UserHandler.Login)
@@ -34,10 +34,14 @@ func (c *RouteConfig) Setup() {
 	product.Post("/:id/stock", c.ProductHandler.UpdateStock)
 	product.Post("/:id/buy", c.ProductHandler.Buy)
 
+	c.App.Patch("/v1/bank/account", authMiddleware, func(c *fiber.Ctx) error {
+		return c.SendStatus(http.StatusNotFound)
+	})
 	bankAccount := c.App.Group("/v1/bank/account", authMiddleware)
 	bankAccount.Get("/", c.BankAccountHandler.List)
 	bankAccount.Get("/:id", c.BankAccountHandler.Get)
 	bankAccount.Patch("/:id", c.BankAccountHandler.Update)
 	bankAccount.Delete("/:id", c.BankAccountHandler.Delete)
 	bankAccount.Post("/", c.BankAccountHandler.Create)
+
 }

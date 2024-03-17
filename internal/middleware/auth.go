@@ -4,11 +4,12 @@ import (
 	"github.com/gofiber/fiber/v2"
 	jwtware "github.com/gofiber/jwt/v3"
 	"github.com/golang-jwt/jwt/v4"
+	"os"
 )
 
-func NewAuthMiddleware(secret string) fiber.Handler {
+func NewAuthMiddleware() fiber.Handler {
 	return jwtware.New(jwtware.Config{
-		SigningKey: []byte(secret),
+		SigningKey: []byte(os.Getenv("JWT_SECRET")),
 		ErrorHandler: func(c *fiber.Ctx, err error) error {
 			return fiber.ErrUnauthorized
 		},

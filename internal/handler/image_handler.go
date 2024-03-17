@@ -23,7 +23,9 @@ func NewImageHandler(s *service.ImageService, log *logrus.Logger) *ImageHandler 
 func (h *ImageHandler) Upload(c *fiber.Ctx) error {
 	file, err := c.FormFile("file")
 	if err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "File is required",
+		})
 	}
 
 	// Validate file size
@@ -56,7 +58,7 @@ func (h *ImageHandler) Upload(c *fiber.Ctx) error {
 		return err
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+	return c.Status(fiber.StatusOK).JSON(fiber.Map{
 		"imageUrl": url,
 	})
 }

@@ -11,6 +11,8 @@ import (
 	"golang-marketplace/internal/model"
 	"golang-marketplace/internal/repository"
 	"log"
+	"os"
+	"strconv"
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
@@ -45,7 +47,12 @@ func (s *UserService) Register(ctx context.Context, request *model.RegisterReque
 		}
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcrypt.DefaultCost)
+	bcryptSalt, err := strconv.Atoi(os.Getenv("BCRYPT_SALT"))
+	if err != nil {
+		return nil, err
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(request.Password), bcryptSalt)
 	if err != nil {
 		log.Println("Error hashedPassword")
 	}
@@ -72,7 +79,7 @@ func (s *UserService) Register(ctx context.Context, request *model.RegisterReque
 	token := jtoken.NewWithClaims(jtoken.SigningMethodHS256, claims)
 
 	//TODO :: config secret jwt
-	t, err := token.SignedString([]byte("secret"))
+	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return nil, err
 	}
@@ -104,7 +111,7 @@ func (s *UserService) Login(ctx context.Context, request *model.LoginRequest) (*
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(request.Password))
 	if err != nil {
-		log.Println("Error Password is Wrong")
+		s.Log.WithError(err).Error("Error Password is Wrong", err.Error())
 		return nil, &fiber.Error{
 			Code:    fiber.StatusBadRequest,
 			Message: "Password is wrong",
@@ -121,8 +128,7 @@ func (s *UserService) Login(ctx context.Context, request *model.LoginRequest) (*
 
 	token := jtoken.NewWithClaims(jtoken.SigningMethodHS256, claims)
 
-	//TODO :: config secret jwt
-	t, err := token.SignedString([]byte("secret"))
+	t, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
 		return nil, err
 	}
@@ -140,7 +146,7 @@ func (s *UserService) getUsername(username string) (*entity.User, error) {
 	user := entity.User{Username: username}
 	err := s.Repository.GetByUsername(&user)
 	if err != nil {
-		log.Println("Error Get User by Username")
+		s.Log.WithError(err).Error("Error Get User by Username", err.Error())
 		return nil, &fiber.Error{
 			Code:    fiber.StatusNotFound,
 			Message: "User NotFound",

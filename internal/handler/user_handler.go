@@ -24,7 +24,9 @@ func (h *UserHandler) Login(c *fiber.Ctx) error {
 	request := new(model.LoginRequest)
 
 	if err := c.BodyParser(request); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+		})
 	}
 
 	resp, err := h.Service.Login(c.UserContext(), request)
@@ -42,7 +44,9 @@ func (h *UserHandler) Register(c *fiber.Ctx) error {
 	request := new(model.RegisterRequest)
 
 	if err := c.BodyParser(request); err != nil {
-		return err
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+			"message": "Invalid request body",
+		})
 	}
 
 	resp, err := h.Service.Register(c.UserContext(), request)
