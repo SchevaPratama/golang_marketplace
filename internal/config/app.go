@@ -24,16 +24,13 @@ type BootstrapConfig struct {
 }
 
 func Bootstrap(config *BootstrapConfig) {
-	// aws
-	aws := NewAws(config.Config)
-
 	// setup repositories
 	userRepository := repository.NewUserRepository(config.DB)
 	productRepository := repository.NewProductRepository(config.DB)
 	bankAccountRepository := repository.NewBankAccountRepository(config.DB)
 
 	// setup services
-	imageService := service.NewImageService(aws, config.Validate, config.Log)
+	imageService := service.NewImageService(config.Aws, config.Validate, config.Log)
 	productService := service.NewProductService(productRepository, imageService, config.Validate, config.Log)
 	userService := service.NewUserService(userRepository, config.Validate, config.Log)
 	bankAccountService := service.NewBankAccountService(bankAccountRepository, config.Validate, config.Log)

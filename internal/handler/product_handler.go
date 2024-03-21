@@ -115,6 +115,11 @@ func (b *ProductHandler) Create(c *fiber.Ctx) error {
 		// return &fiber.Error{Message: "Opppss", Code: 400}
 	}
 
+	// Validate image url to url
+	if request.ImageUrl[len(request.ImageUrl)-4:] != ".jpg" && request.ImageUrl[len(request.ImageUrl)-5:] != ".jpeg" {
+		return &fiber.Error{Message: "Image url must be url images", Code: 400}
+	}
+
 	err := b.Service.Create(c.UserContext(), request, userId)
 	if err != nil {
 		// return fiber.ErrBadRequest
