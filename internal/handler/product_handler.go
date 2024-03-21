@@ -116,7 +116,7 @@ func (b *ProductHandler) Create(c *fiber.Ctx) error {
 	}
 
 	// Validate image url to url
-	if request.ImageUrl[len(request.ImageUrl)-4:] != ".jpg" && request.ImageUrl[len(request.ImageUrl)-5:] != ".jpeg" {
+	if request.ImageUrl == "" || (request.ImageUrl[len(request.ImageUrl)-4:] != ".jpg" && request.ImageUrl[len(request.ImageUrl)-5:] != ".jpeg") {
 		return &fiber.Error{Message: "Image url must be url images", Code: 400}
 	}
 

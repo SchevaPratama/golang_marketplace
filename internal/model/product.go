@@ -15,7 +15,7 @@ type ProductRespone struct {
 type ProductRequest struct {
 	Name          string   `json:"name" validate:"required,min=5,max=60"`
 	Price         int64    `json:"price" validate:"required,min=0"`
-	ImageUrl      string   `json:"imageUrl" validate:"required,url,min=1"`
+	ImageUrl      string   `json:"imageUrl" validate:"required,url,min=0"`
 	Stock         int16    `json:"stock" validate:"required,min=0"`
 	Condition     string   `json:"condition" validate:"required,oneof=new second"`
 	Tags          []string `json:"tags" validate:"required"`
