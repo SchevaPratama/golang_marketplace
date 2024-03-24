@@ -17,11 +17,11 @@ func NewDatabase(viper *viper.Viper) *sqlx.DB {
 	host := os.Getenv("DB_HOST")         //viper.GetString("database.host")
 	port := os.Getenv("DB_PORT")         // viper.GetInt("database.port")
 	database := os.Getenv("DB_NAME")     //viper.GetString("database.name")
-	idleConnection := viper.GetInt("database.pool.idle")
-	maxConnection := viper.GetInt("database.pool.max")
-	maxLifeTimeConnection := viper.GetInt("database.pool.lifetime")
+	idleConnection := 100
+	maxConnection := 600
+	maxLifeTimeConnection := 600
 
-	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, username, password, database)
+	dsn := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s %s", host, port, username, password, database, os.Getenv("DB_PARAMS"))
 
 	db, err := sqlx.Connect("postgres", dsn)
 	if err != nil {
