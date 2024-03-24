@@ -27,7 +27,6 @@ func NewDatabase(viper *viper.Viper) *sqlx.DB {
 	if err != nil {
 		log.Fatalf("Failed connect database: %v", err)
 	}
-
 	db.SetMaxIdleConns(idleConnection)
 	db.SetMaxOpenConns(maxConnection)
 	db.SetConnMaxLifetime(time.Second * time.Duration(maxLifeTimeConnection))
