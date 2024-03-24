@@ -7,9 +7,9 @@ import (
 
 func NewFiber(config *viper.Viper) *fiber.App {
 	var app = fiber.New(fiber.Config{
-		AppName:      config.GetString("app.name"),
+		AppName:      "marketplace golang",
 		ErrorHandler: NewErrorHandler(),
-		Prefork:      config.GetBool("web.prefork"),
+		Prefork:      true,
 	})
 
 	return app

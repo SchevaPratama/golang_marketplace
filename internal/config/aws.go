@@ -2,7 +2,6 @@ package config
 
 import (
 	"context"
-	"fmt"
 	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/credentials"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -12,10 +11,6 @@ import (
 )
 
 func NewAws(v *viper.Viper) *s3.Client {
-
-	fmt.Println("S3 id :: ", os.Getenv("S3_ID"))
-	fmt.Println("S3 secret :: ", os.Getenv("S3_SECRET_KEY"))
-	fmt.Println("S3 region :: ", os.Getenv("S3_REGION"))
 
 	cfg, err := config.LoadDefaultConfig(context.TODO(),
 		config.WithCredentialsProvider(credentials.NewStaticCredentialsProvider(
